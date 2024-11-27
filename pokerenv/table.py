@@ -213,7 +213,7 @@ class Table(gym.Env):
             transitioned = True
         if self.street == GameState.FLOP and (not transitioned or transition_to_end):
             new = self.deck.draw(1)
-            self.cards.append(new)
+            self.cards.extend(new)
             self._write_event("*** TURN *** [%s %s %s] [%s]" %
                               (Card.int_to_str(self.cards[0]), Card.int_to_str(self.cards[1]),
                                Card.int_to_str(self.cards[2]), Card.int_to_str(self.cards[3])))
@@ -221,7 +221,7 @@ class Table(gym.Env):
             transitioned = True
         if self.street == GameState.TURN and (not transitioned or transition_to_end):
             new = self.deck.draw(1)
-            self.cards.append(new)
+            self.cards.extend(new)
             self._write_event("*** RIVER *** [%s %s %s %s] [%s]" %
                               (Card.int_to_str(self.cards[0]), Card.int_to_str(self.cards[1]),
                                Card.int_to_str(self.cards[2]), Card.int_to_str(self.cards[3]),
