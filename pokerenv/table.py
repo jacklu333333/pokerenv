@@ -143,7 +143,7 @@ class Table(gym.Env):
                     self._write_event(f"{player.name}: calls {call_size * BB:.2f}")
             elif action.action_type is PlayerAction.BET:
                 previous_bet_this_street = player.bet_this_street
-                actual_bet_size = player.bet(np.round(action.bet_amount, 2))
+                actual_bet_size = player.bet(np.round(action.bet_amount, 2)[0])
                 self.pot += actual_bet_size
                 if self.bet_to_match == 0:
                     if player.all_in:
@@ -279,6 +279,10 @@ class Table(gym.Env):
 
         if self.street_finished and not self.hand_is_over:
             self._street_transition()
+
+        if self.hand_is_over:
+            self._distribute_pot()
+            self._finish_hand()
 
         obs = (
             np.zeros(self.observation_space.shape[0])
