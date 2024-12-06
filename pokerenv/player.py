@@ -31,6 +31,8 @@ class Player:
         if self.has_acted:
             tmp = self.pending_penalty
             self.pending_penalty = 0
+            if self.history[-1]["action"] == PlayerAction.FOLD:
+                return tmp + self.winnings - self.money_in_pot
             return tmp + self.winnings
         else:
             return None
