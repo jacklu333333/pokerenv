@@ -26,15 +26,15 @@ class Table(gym.Env):
         self.action_space = gym.spaces.Tuple(
             (gym.spaces.Discrete(4), gym.spaces.Box(-math.inf, math.inf, (1, 1)))
         )
-        self.observation_space = gym.spaces.Box(-math.inf, math.inf, (58, 1))
+        self.observation_space = gym.spaces.Box(-math.inf, math.inf, (82, 1))
         self.n_players = n_players
         if player_names is None:
             player_names = {}
-        for player in range(6):
+        for player in range(10):
             if player not in player_names.keys():
                 player_names[player] = "player_%d" % (player + 1)
         self.all_players = [
-            Player(n, player_names[n], invalid_action_penalty) for n in range(6)
+            Player(n, player_names[n], invalid_action_penalty) for n in range(10)
         ]
         # If not None, tracked_player_i chooses which players private cards we write to the hand history (for tracking software)
         self.track_single_player = track_single_player
