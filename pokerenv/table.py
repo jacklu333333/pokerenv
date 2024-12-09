@@ -64,7 +64,7 @@ class Table(gym.Env):
     def seed(self, seed=None):
         self.rng = np.random.default_rng(seed)
 
-    def reset(self):
+    def reset(self, shuffle=True):
         self.current_turn = 0
         self.pot = 0
         self.street = GameState.PREFLOP
@@ -73,7 +73,8 @@ class Table(gym.Env):
         self.cards = []
         self.active_players = self.n_players
         self.players = self.all_players[: self.n_players]
-        self.rng.shuffle(self.players)
+        if shuffle:
+            self.rng.shuffle(self.players)
         self.next_player_i = 0 if self.n_players == 2 else 2
         self.current_player_i = self.next_player_i
         self.first_to_act = None
@@ -108,11 +109,12 @@ class Table(gym.Env):
         self.current_player_i = self.next_player_i
         player = self.players[self.current_player_i]
         self.current_turn += 1
-
         if (
             player.all_in or player.state is not PlayerState.ACTIVE
         ) and not self.hand_is_over:
-            raise Exception("A player who is inactive or all-in was allowed to act")
+            raise Exception(
+                f"A player who is inactive or all-in was allowed to act,{player.name} {player.state} {player.all_in} {action.action_type.name} {action.bet_amount}"
+            )
         if self.first_to_act is None:
             self.first_to_act = player
 
@@ -121,6 +123,8 @@ class Table(gym.Env):
             valid_actions = self._get_valid_actions(player)
             if not self._is_action_valid(player, action, valid_actions):
                 player.punish_invalid_action()
+                # # TODO delete me later
+                # raise Exception(f"Invalid action {action.action_type.name} {action.bet_amount} {valid_actions}")
             elif action.action_type is PlayerAction.FOLD:
                 player.fold()
                 self.active_players -= 1
@@ -143,7 +147,10 @@ class Table(gym.Env):
                     self._write_event(f"{player.name}: calls {call_size * BB:.2f}")
             elif action.action_type is PlayerAction.BET:
                 previous_bet_this_street = player.bet_this_street
-                actual_bet_size = player.bet(np.round(action.bet_amount, 2)[0])
+                if isinstance(action.bet_amount, np.ndarray):
+                    actual_bet_size = player.bet(np.round(action.bet_amount, 2)[0])
+                else:
+                    actual_bet_size = player.bet(action.bet_amount)
                 self.pot += actual_bet_size
                 if self.bet_to_match == 0:
                     if player.all_in:
@@ -356,6 +363,7 @@ class Table(gym.Env):
         self.minimum_raise = 0
         for player in self.players:
             player.finish_street()
+            self._write_event(f"{player.name} stack: {player.stack}")
 
     def _change_bet_to_match(self, new_amount):
         self.minimum_raise = new_amount - self.bet_to_match
